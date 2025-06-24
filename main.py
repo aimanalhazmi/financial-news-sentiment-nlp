@@ -91,6 +91,7 @@ def train_model(
     results,
     num_epochs=50,
     lr=0.001,
+    weight_decay=0.0001,
     label_smoothing=0.1,
 ):
     model_dir = make_model_subfolder(save_dir, model_name)
@@ -114,7 +115,7 @@ def train_model(
     y_test_tensor = torch.tensor(y_test.values, dtype=torch.long)
 
     criterion = nn.CrossEntropyLoss(label_smoothing=label_smoothing)
-    optimizer = optim.Adam(model.parameters(), lr=lr)
+    optimizer = optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
 
     best_val_loss = float("inf")
     best_model_state = None
@@ -185,9 +186,10 @@ def main():
     text_col = "news"
     label_col = "sentiment"
     save_dir = create_reports_subfolder("training_results")
-    hidden_dim = 64
+    hidden_dim = 100
     num_epochs = 30
     lr = 0.01
+    weight_decay = 0.0001
     label_smoothing = 0.1
     results = []
 
@@ -272,6 +274,7 @@ def main():
         )
         input_dim = X_train_vec.shape[1]
         model = FeedforwardNeuralNetModel(input_dim, hidden_dim, len(labels))
+
         train_model(
             model,
             "FeedforwardNN",
@@ -285,6 +288,7 @@ def main():
             results,
             num_epochs=num_epochs,
             lr=lr,
+            weight_decay=weight_decay,
             label_smoothing=label_smoothing,
         )
 
