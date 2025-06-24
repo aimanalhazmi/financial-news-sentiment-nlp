@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 import spacy
 import string
 from typing import List, Tuple
@@ -8,6 +9,8 @@ from sklearn.feature_extraction.text import (
     TfidfVectorizer,
     HashingVectorizer,
 )
+from sklearn.base import TransformerMixin
+from gensim.downloader import load as gensim_load
 from sklearn.model_selection import train_test_split
 from src import visual
 
@@ -45,8 +48,8 @@ def remove_empty_or_whitespace_rows(df: pd.DataFrame, column: str) -> pd.DataFra
 def lemmatize_and_clean_text(doc) -> str:
     """Lemmatizes a spaCy Doc and removes stopwords and punctuation."""
     return " ".join(
-        token.lemma_ for token in doc if not token.is_stop and not token.is_punct
-    )
+        token.lemma_ for token in doc
+    )  # if not token.is_stop and not token.is_punct
 
 
 def remove_duplicates(
@@ -190,21 +193,38 @@ def preprocess(
 # ---------------- Feature Extraction ---------------- #
 
 
+class GloVeVectorizer(TransformerMixin):
+    def __init__(self, model_name="glove-wiki-gigaword-100"):
+        self.model_name = model_name
+        self.model = gensim_load(model_name)
+        self.dim = self.model.vector_size
+
+    def fit(self, X, y=None):
+        return self
+
+    def transform(self, X):
+        return np.array(
+            [
+                np.mean(
+                    [self.model[word] for word in doc.split() if word in self.model]
+                    or [np.zeros(self.dim)],
+                    axis=0,
+                )
+                for doc in X
+            ]
+        )
+
+
 def build_text_vectorizer(method: str = "tfidf"):
     """
-    Builds a text vectorizer using the specified method.
-
     Supported methods:
-        - 'count'       : CountVectorizer
-        - 'binary'      : CountVectorizer (binary=True)
-        - 'tfidf'       : TfidfVectorizer (default, with n-grams)
-        - 'hashing'     : HashingVectorizer
-
-    Args:
-        method (str): Vectorization method to use.
-
-    Returns:
-        A scikit-learn vectorizer instance.
+        - 'count'                      → CountVectorizer
+        - 'binary'                     → CountVectorizer(binary=True)
+        - 'tfidf'                      → TfidfVectorizer (1-2 grams)
+        - 'hashing'                    → HashingVectorizer
+        - 'glove-50'                  → GloVe 50d
+        - 'glove-100' (default)       → GloVe 100d
+        - 'glove-200'                 → GloVe 200d
     """
     if method == "count":
         return CountVectorizer()
@@ -214,6 +234,12 @@ def build_text_vectorizer(method: str = "tfidf"):
         return TfidfVectorizer(ngram_range=(1, 3))
     elif method == "hashing":
         return HashingVectorizer(n_features=1000, alternate_sign=False)
+    elif method == "glove-50":
+        return GloVeVectorizer("glove-wiki-gigaword-50")
+    elif method == "glove-100":
+        return GloVeVectorizer("glove-wiki-gigaword-100")
+    elif method == "glove-200":
+        return GloVeVectorizer("glove-wiki-gigaword-200")
     else:
         raise ValueError(f"Unknown vectorization method: '{method}'")
 

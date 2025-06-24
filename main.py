@@ -9,6 +9,8 @@ from sklearn.model_selection import GridSearchCV
 from sklearn.metrics import classification_report, confusion_matrix
 from sklearn.metrics import precision_recall_fscore_support, accuracy_score
 import pandas as pd
+import scipy.sparse
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -70,6 +72,12 @@ def train_and_evaluate_classic_model(
     log_results(results, model_name, method, y_test, preds, report_path)
 
 
+def to_dense(X):
+    if scipy.sparse.issparse(X):
+        return X.toarray()
+    return np.array(X)
+
+
 def train_model(
     model,
     model_name: str,
@@ -81,7 +89,7 @@ def train_model(
     method,
     save_dir,
     results,
-    num_epochs=100,
+    num_epochs=50,
     lr=0.001,
     label_smoothing=0.1,
 ):
@@ -96,8 +104,8 @@ def train_model(
 
     # Convert inputs to tensors (if not already)
     if not torch.is_tensor(X_train):
-        X_train_tensor = torch.tensor(X_train.toarray(), dtype=torch.float32)
-        X_test_tensor = torch.tensor(X_test.toarray(), dtype=torch.float32)
+        X_train_tensor = torch.tensor(to_dense(X_train), dtype=torch.float32)
+        X_test_tensor = torch.tensor(to_dense(X_test), dtype=torch.float32)
     else:
         X_train_tensor = X_train
         X_test_tensor = X_test
@@ -177,9 +185,9 @@ def main():
     text_col = "news"
     label_col = "sentiment"
     save_dir = create_reports_subfolder("training_results")
-    hidden_dim = 1000
-    num_epochs = 100
-    lr = 0.001
+    hidden_dim = 64
+    num_epochs = 30
+    lr = 0.01
     label_smoothing = 0.1
     results = []
 
@@ -220,12 +228,17 @@ def main():
     X_train, X_test, y_train, y_test = train_test_split(
         df_clean[processed_col],
         df_clean[label_col],
-        test_size=0.3,
+        test_size=0.2,
         random_state=42,
         stratify=df_clean[label_col],
     )
 
-    vectorizer_methods = ["count", "binary", "tfidf", "hashing"]
+    vectorizer_methods = [
+        "count",
+        "binary",
+        "tfidf",
+        "hashing",
+    ]
     for method in vectorizer_methods:
         print(f"\n\033[94m--- Vectorizer: {method} ---\033[0m")
         vectorizer = preprocessing.build_text_vectorizer(method)
