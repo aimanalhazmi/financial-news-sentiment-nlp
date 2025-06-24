@@ -160,6 +160,19 @@ def generate_word_cloud_by_sentiment(df, text_column, sentiment_col, save=False,
     plt.close()
 
 
+def plot_loss(train_loss, val_loss, save, save_path):
+    plt.figure(figsize=(10, 5))
+    plt.plot(range(1, len(train_loss)+1), train_loss, label='Train Loss')
+    plt.plot(range(1, len(val_loss) + 1), val_loss, label='Val Loss')
+    plt.legend()
+    plt.xlabel('Epoch')
+    plt.ylabel('Loss')
+    plt.title('Loss Curve')
+    plt.tight_layout()
+    if save and save_path:
+        plt.savefig(save_path, bbox_inches='tight')
+    else:
+        plt.show()
 
 
 def generate_dataset_insights(

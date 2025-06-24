@@ -1,31 +1,42 @@
-
-from sklearn.pipeline import Pipeline
-from sklearn.linear_model import SGDClassifier
-from sklearn.model_selection import GridSearchCV
-
-def define_pipeline(preprocessor):
-    pipeline = Pipeline(steps=[
-        ("preprocessor", preprocessor),
-        ("classifier", SGDClassifier(random_state=42, max_iter=1000))
-    ])
-
-    param_grid = [
-        {
-            "preprocessor__textual_features__vectorizer__max_features": [100, 10000, 50000, 100000],
-            "classifier__alpha": [0.00001, 0.0001, 0.001, 0.01],
-            "classifier__penalty": ["l2", "l1"],
-            "classifier__loss": ["log_loss", "hinge"]
-        }
-    ]
-    search_cv = GridSearchCV(
-        estimator=pipeline,
-        param_grid=param_grid,
-        cv=5,
-        scoring="accuracy",
-        n_jobs=-1,
-    )
-    return search_cv
+import torch.nn as nn
+import torch.nn.functional as F
+import torch.optim as optim
 
 
-def model_build():
+class FeedforwardNeuralNetModel(nn.Module):
+    def __init__(self, input_dim, hidden_dim, output_dim):
+        super(FeedforwardNeuralNetModel, self).__init__()
+
+        # Linear function 1: vocab_size --> 1000
+        self.fc1 = nn.Linear(input_dim, hidden_dim)
+        # Non-linearity 1
+        self.relu1 = nn.ReLU()
+
+        # Linear function 2: 1000 --> 1000
+        #self.fc2 = nn.Linear(hidden_dim, hidden_dim)
+        # Non-linearity 2
+        #self.relu2 = nn.ReLU()
+
+        # Linear function 3 (readout): 1000 --> 3
+        self.fc3 = nn.Linear(hidden_dim, output_dim)
+
+    def forward(self, x):
+        # Linear function 1
+        out = self.fc1(x)
+        # Non-linearity 1
+        out = self.relu1(out)
+
+        # Linear function 2
+        #out = self.fc2(out)
+        # Non-linearity 2
+        #out = self.relu2(out)
+
+        # Linear function 3 (readout)
+        out = self.fc3(out)
+
+        return F.softmax(out, dim=1)
+
+
+
+def train_predict_naive_Bayes_model():
     pass
