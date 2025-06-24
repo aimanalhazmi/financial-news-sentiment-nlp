@@ -46,9 +46,12 @@ def remove_empty_or_whitespace_rows(df: pd.DataFrame, column: str) -> pd.DataFra
 
 
 def lemmatize_and_clean_text(doc) -> str:
-    """Lemmatizes a spaCy Doc and removes stopwords and punctuation."""
+    """Lemmatizes a spaCy Doc and removes numbers, stopwords and punctuation."""
     return " ".join(
-        token.lemma_ for token in doc
+        token.lemma_
+        for token in doc
+        if not token.like_num  # removes numeric tokens
+        and not any(char.isdigit() for char in token.text)  # removes tokens with digits
     )  # if not token.is_stop and not token.is_punct
 
 

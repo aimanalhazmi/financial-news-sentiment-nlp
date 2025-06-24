@@ -1,13 +1,13 @@
 Model;Vectorizer;Accuracy;Weighted Precision;Weighted Recall;Weighted F1 Score;Report Path
-NaiveBayes;count;72.93;72.07;72.93;71.85;./reports/training_results/NaiveBayes/report_count.txt
-LogisticRegression;count;77.79;77.38;77.79;77.08;./reports/training_results/LogisticRegression/report_count.txt
-FeedforwardNN;count;76.65;76.28;76.65;76.31;./reports/training_results/FeedforwardNN/report_count.txt
-NaiveBayes;binary;72.93;72.07;72.93;71.78;./reports/training_results/NaiveBayes/report_binary.txt
-LogisticRegression;binary;77.38;76.94;77.38;76.85;./reports/training_results/LogisticRegression/report_binary.txt
-FeedforwardNN;binary;77.07;76.76;77.07;76.85;./reports/training_results/FeedforwardNN/report_binary.txt
-NaiveBayes;tfidf;66.84;69.77;66.84;59.57;./reports/training_results/NaiveBayes/report_tfidf.txt
-LogisticRegression;tfidf;74.38;75.41;74.38;71.85;./reports/training_results/LogisticRegression/report_tfidf.txt
-FeedforwardNN;tfidf;76.55;76.28;76.55;75.41;./reports/training_results/FeedforwardNN/report_tfidf.txt
-NaiveBayes;hashing;67.67;69.29;67.67;61.73;./reports/training_results/NaiveBayes/report_hashing.txt
-LogisticRegression;hashing;73.14;72.82;73.14;71.42;./reports/training_results/LogisticRegression/report_hashing.txt
-FeedforwardNN;hashing;71.59;70.83;71.59;69.89;./reports/training_results/FeedforwardNN/report_hashing.txt
+NaiveBayes;count;71.35;70.23;71.35;70.18;./reports/training_results/NaiveBayes/report_count.txt
+LogisticRegression;count;78.44;78.29;78.44;77.9;./reports/training_results/LogisticRegression/report_count.txt
+FeedforwardNN;count;79.17;79.12;79.17;78.86;./reports/training_results/FeedforwardNN/report_count.txt
+NaiveBayes;binary;71.88;70.85;71.88;70.55;./reports/training_results/NaiveBayes/report_binary.txt
+LogisticRegression;binary;78.85;78.91;78.85;78.36;./reports/training_results/LogisticRegression/report_binary.txt
+FeedforwardNN;binary;78.85;78.69;78.85;78.62;./reports/training_results/FeedforwardNN/report_binary.txt
+NaiveBayes;tfidf;66.88;70.02;66.88;59.41;./reports/training_results/NaiveBayes/report_tfidf.txt
+LogisticRegression;tfidf;74.17;75.72;74.17;71.16;./reports/training_results/LogisticRegression/report_tfidf.txt
+FeedforwardNN;tfidf;77.92;77.94;77.92;77.2;./reports/training_results/FeedforwardNN/report_tfidf.txt
+NaiveBayes;hashing;66.25;66.01;66.25;59.86;./reports/training_results/NaiveBayes/report_hashing.txt
+LogisticRegression;hashing;72.19;71.66;72.19;70.06;./reports/training_results/LogisticRegression/report_hashing.txt
+FeedforwardNN;hashing;71.15;70.59;71.15;68.67;./reports/training_results/FeedforwardNN/report_hashing.txt
