@@ -6,7 +6,7 @@ from nltk.corpus import stopwords
 from sklearn.feature_extraction.text import (
     CountVectorizer,
     TfidfVectorizer,
-    HashingVectorizer
+    HashingVectorizer,
 )
 from sklearn.model_selection import train_test_split
 from src import visual
@@ -15,20 +15,20 @@ from src import visual
 nlp = spacy.load("en_core_web_sm")
 
 
-
 # ---------------- Utility Functions ---------------- #
+
 
 def clean_text(text) -> str:
     """Lowercases text, removes punctuation and stopwords."""
-    stop_words = set(stopwords.words('english'))
-    punct_table = str.maketrans('', '', string.punctuation)
+    stop_words = set(stopwords.words("english"))
+    punct_table = str.maketrans("", "", string.punctuation)
 
     if not isinstance(text, str):
-        return ''
+        return ""
     text = text.lower().translate(punct_table)
     tokens = text.split()
     tokens = [word for word in tokens if word not in stop_words]
-    return ' '.join(tokens)
+    return " ".join(tokens)
 
 
 def remove_empty_or_whitespace_rows(df: pd.DataFrame, column: str) -> pd.DataFrame:
@@ -36,34 +36,41 @@ def remove_empty_or_whitespace_rows(df: pd.DataFrame, column: str) -> pd.DataFra
     Removes rows where the given column is empty, whitespace, or invalid content.
     """
     return df[
-        df[column].notna() &
-        ~df[column].str.strip().eq('') &
-        ~df[column].str.strip().eq('` `')
+        df[column].notna()
+        & ~df[column].str.strip().eq("")
+        & ~df[column].str.strip().eq("` `")
     ]
+
 
 def lemmatize_and_clean_text(doc) -> str:
     """Lemmatizes a spaCy Doc and removes stopwords and punctuation."""
-    return ' '.join(
-        token.lemma_ for token in doc
-        if not token.is_stop and not token.is_punct
+    return " ".join(
+        token.lemma_ for token in doc if not token.is_stop and not token.is_punct
     )
 
-def remove_duplicates(df: pd.DataFrame, subset: List[str], keep: str = 'first') -> pd.DataFrame:
+
+def remove_duplicates(
+    df: pd.DataFrame, subset: List[str], keep: str = "first"
+) -> pd.DataFrame:
     """Remove duplicate rows based on specified columns."""
     return df.drop_duplicates(subset=subset, keep=keep)
+
 
 def encode_sentiment_labels(labels: pd.Series) -> pd.Series:
     """
     Converts sentiment labels into numerical values.
     'positive' -> 1, 'neutral' -> 0, 'negative' -> -1
     """
-    mapping = {'positive': 1, 'neutral': 0, 'negative': -1}
+    mapping = {"positive": 1, "neutral": 0, "negative": -1}
     return labels.map(mapping).astype(int)
 
 
 # ---------------- Text Processing Functions ---------------- #
 
-def basic_clean_for_statistics(df: pd.DataFrame, text_column: str) -> Tuple[pd.DataFrame, str]:
+
+def basic_clean_for_statistics(
+    df: pd.DataFrame, text_column: str
+) -> Tuple[pd.DataFrame, str]:
     """
     Applies simple preprocessing to the target column for statistical analysis:
     - Lowercase
@@ -80,9 +87,10 @@ def basic_clean_for_statistics(df: pd.DataFrame, text_column: str) -> Tuple[pd.D
         Tuple: (cleaned DataFrame, name of cleaned text column)
     """
     cleaned_df = df.copy()
-    clean_column_name = f'clean_{text_column}'
+    clean_column_name = f"clean_{text_column}"
     cleaned_df[clean_column_name] = cleaned_df[text_column].apply(clean_text)
     return cleaned_df, clean_column_name
+
 
 def preprocess_text_column(df: pd.DataFrame, column: str) -> Tuple[pd.DataFrame, str]:
     """
@@ -100,7 +108,7 @@ def preprocess_text_column(df: pd.DataFrame, column: str) -> Tuple[pd.DataFrame,
 
     text_list = df_clean[column].str.lower().str.strip().tolist()
     docs = nlp.pipe(text_list)
-    new_column = f'cleaned_{column}'
+    new_column = f"cleaned_{column}"
     df_clean[new_column] = [lemmatize_and_clean_text(doc) for doc in docs]
 
     df_clean = remove_empty_or_whitespace_rows(df_clean, new_column)
@@ -112,11 +120,9 @@ def preprocess_text_column(df: pd.DataFrame, column: str) -> Tuple[pd.DataFrame,
 
     return df_clean, new_column
 
+
 def preprocess(
-    df: pd.DataFrame,
-    text_column: str,
-    label_column: str,
-    apply_cleaning: bool = True
+    df: pd.DataFrame, text_column: str, label_column: str, apply_cleaning: bool = True
 ) -> Tuple[pd.DataFrame, str]:
     """
     Preprocesses the text column by cleaning and removing duplicates.
@@ -131,23 +137,33 @@ def preprocess(
         Tuple[pd.DataFrame, str]: Cleaned DataFrame and name of processed text column.
     """
     original_rows = len(df)
-    cleaned_df =  df.copy()
+    cleaned_df = df.copy()
     # Duplicate check before cleaning
-    dupes_before = cleaned_df.groupby([text_column, label_column]).size().reset_index(name='count')
-    num_dupes_before = len(dupes_before.query('count > 1'))
+    dupes_before = (
+        cleaned_df.groupby([text_column, label_column]).size().reset_index(name="count")
+    )
+    num_dupes_before = len(dupes_before.query("count > 1"))
 
     if apply_cleaning:
         cleaned_df, processed_col = preprocess_text_column(cleaned_df, text_column)
 
         # Duplicate check after cleaning
-        dupes_after = cleaned_df.groupby([processed_col, label_column]).size().reset_index(name='count')
-        dupes_found = dupes_after.query('count > 1')
+        dupes_after = (
+            cleaned_df.groupby([processed_col, label_column])
+            .size()
+            .reset_index(name="count")
+        )
+        dupes_found = dupes_after.query("count > 1")
         num_dupes_after = len(dupes_found)
 
         if not dupes_found.empty:
-            cleaned_df = remove_duplicates(cleaned_df, [processed_col, label_column], keep='first')
+            cleaned_df = remove_duplicates(
+                cleaned_df, [processed_col, label_column], keep="first"
+            )
 
-        visual.plot_most_common_words_by_sentiment(cleaned_df, processed_col, label_column)
+        visual.plot_most_common_words_by_sentiment(
+            cleaned_df, processed_col, label_column
+        )
         visual.generate_word_cloud_by_sentiment(cleaned_df, processed_col, label_column)
 
     else:
@@ -170,9 +186,11 @@ def preprocess(
 
     return cleaned_df, processed_col
 
+
 # ---------------- Feature Extraction ---------------- #
 
-def build_text_vectorizer(method: str = 'tfidf'):
+
+def build_text_vectorizer(method: str = "tfidf"):
     """
     Builds a text vectorizer using the specified method.
 
@@ -188,16 +206,17 @@ def build_text_vectorizer(method: str = 'tfidf'):
     Returns:
         A scikit-learn vectorizer instance.
     """
-    if method == 'count':
+    if method == "count":
         return CountVectorizer()
-    elif method == 'binary':
+    elif method == "binary":
         return CountVectorizer(binary=True)
-    elif method == 'tfidf':
+    elif method == "tfidf":
         return TfidfVectorizer(ngram_range=(1, 3))
-    elif method == 'hashing':
+    elif method == "hashing":
         return HashingVectorizer(n_features=1000, alternate_sign=False)
     else:
         raise ValueError(f"Unknown vectorization method: '{method}'")
+
 
 # ---------------- Main  ---------------- #
 def run_pipeline_process_and_vectorize_data(
@@ -207,7 +226,7 @@ def run_pipeline_process_and_vectorize_data(
     vectorizer_method: str = "tfidf",
     apply_cleaning: bool = True,
     test_size: float = 0.3,
-    random_state: int = 42
+    random_state: int = 42,
 ) -> Tuple:
     """
     Full pipeline: preprocess text, encode labels, split data, and vectorize text.
@@ -244,7 +263,7 @@ def run_pipeline_process_and_vectorize_data(
         df_clean[label_column],
         test_size=test_size,
         random_state=random_state,
-        stratify=df_clean[label_column]
+        stratify=df_clean[label_column],
     )
 
     # Vectorize text

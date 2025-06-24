@@ -1,6 +1,5 @@
 import torch.nn as nn
 import torch.nn.functional as F
-import torch.optim as optim
 
 
 class FeedforwardNeuralNetModel(nn.Module):
@@ -13,9 +12,9 @@ class FeedforwardNeuralNetModel(nn.Module):
         self.relu1 = nn.ReLU()
 
         # Linear function 2: 1000 --> 1000
-        #self.fc2 = nn.Linear(hidden_dim, hidden_dim)
+        # self.fc2 = nn.Linear(hidden_dim, hidden_dim)
         # Non-linearity 2
-        #self.relu2 = nn.ReLU()
+        # self.relu2 = nn.ReLU()
 
         # Linear function 3 (readout): 1000 --> 3
         self.fc3 = nn.Linear(hidden_dim, output_dim)
@@ -27,15 +26,14 @@ class FeedforwardNeuralNetModel(nn.Module):
         out = self.relu1(out)
 
         # Linear function 2
-        #out = self.fc2(out)
+        # out = self.fc2(out)
         # Non-linearity 2
-        #out = self.relu2(out)
+        # out = self.relu2(out)
 
         # Linear function 3 (readout)
         out = self.fc3(out)
 
         return F.softmax(out, dim=1)
-
 
 
 def train_predict_naive_Bayes_model():

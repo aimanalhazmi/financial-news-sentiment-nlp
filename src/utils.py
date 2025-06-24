@@ -2,17 +2,19 @@ import os
 import pandas as pd
 
 
-def count_number_of_words(df: pd.DataFrame, column_to_count: str, count_to: str = "number_of_words") -> pd.DataFrame:
+def count_number_of_words(
+    df: pd.DataFrame, column_to_count: str, count_to: str = "number_of_words"
+) -> pd.DataFrame:
     df[count_to] = df[column_to_count].apply(lambda x: len(x.split()))
     return df
+
 
 def get_unique_words(texts):
     """
     Return a set of unique words from a list/series of texts.
     """
-    all_words = ' '.join(texts).split()
+    all_words = " ".join(texts).split()
     return set(all_words)
-
 
 
 def create_reports_subfolder(subfolder_name: str) -> str:
@@ -20,6 +22,14 @@ def create_reports_subfolder(subfolder_name: str) -> str:
     reports_path = os.path.join(".", "reports", subfolder_name)
     os.makedirs(reports_path, exist_ok=True)
     return reports_path
+
+
+def make_model_subfolder(base_path: str, model_name: str) -> str:
+    """Creates a subfolder for a specific model inside the given report base path."""
+    model_path = os.path.join(base_path, model_name)
+    os.makedirs(model_path, exist_ok=True)
+    return model_path
+
 
 def print_sentiment_distribution(df: pd.DataFrame, sentiment_col: str):
     """Prints the sentiment distribution with count (percentage)."""

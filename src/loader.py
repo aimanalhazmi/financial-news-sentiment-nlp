@@ -1,5 +1,6 @@
 import pandas as pd
 
+
 def load_data(data_path: str, text_column: str, sentiment_col: str) -> pd.DataFrame:
     """
     Load data from a text file where each line contains text and label separated by '@'.
@@ -16,13 +17,13 @@ def load_data(data_path: str, text_column: str, sentiment_col: str) -> pd.DataFr
     data = []
     skipped = 0
     print(f"Loading data from: {data_path} ...")
-    with open(data_path, 'r', encoding='latin1') as f:
+    with open(data_path, "r", encoding="latin1") as f:
         for line in f:
             line = line.strip()
-            if '@' not in line:
+            if "@" not in line:
                 skipped += 1
                 continue
-            parts = line.split('@', 1)  # split only on first '@'
+            parts = line.split("@", 1)  # split only on first '@'
             data.append(parts)
 
     print(f"Loaded {len(data)} lines.")
