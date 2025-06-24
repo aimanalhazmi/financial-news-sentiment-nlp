@@ -30,8 +30,7 @@ financial-news-sentiment-analysis/
 ├── data/                       # Dataset files
 ├── notebooks/                  # Jupyter notebooks
 ├── src/                        # Scripts for models, preprocessing, evaluation
-├── reports/                    # Final report
-├── visualizations/             # Plots, charts, and word clouds
+├── reports/                    # Results and Final report
 ├── requirements.txt            # Python package dependencies
 └── README.md                   # Project overview
   ```
