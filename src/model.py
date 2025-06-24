@@ -4,37 +4,12 @@ import torch.nn.functional as F
 
 class FeedforwardNeuralNetModel(nn.Module):
     def __init__(self, input_dim, hidden_dim, output_dim):
-        super(FeedforwardNeuralNetModel, self).__init__()
-
-        # Linear function 1: vocab_size --> 1000
+        super().__init__()
         self.fc1 = nn.Linear(input_dim, hidden_dim)
-        # Non-linearity 1
-        self.relu1 = nn.ReLU()
-
-        # Linear function 2: 1000 --> 1000
-        # self.fc2 = nn.Linear(hidden_dim, hidden_dim)
-        # Non-linearity 2
-        # self.relu2 = nn.ReLU()
-
-        # Linear function 3 (readout): 1000 --> 3
-        self.fc3 = nn.Linear(hidden_dim, output_dim)
+        self.relu = nn.ReLU()
+        self.fc2 = nn.Linear(hidden_dim, output_dim)
 
     def forward(self, x):
-        # Linear function 1
-        out = self.fc1(x)
-        # Non-linearity 1
-        out = self.relu1(out)
-
-        # Linear function 2
-        # out = self.fc2(out)
-        # Non-linearity 2
-        # out = self.relu2(out)
-
-        # Linear function 3 (readout)
-        out = self.fc3(out)
-
-        return F.softmax(out, dim=1)
-
-
-def train_predict_naive_Bayes_model():
-    pass
+        x = self.relu(self.fc1(x))
+        x = self.fc2(x)
+        return F.softmax(x, dim=1)

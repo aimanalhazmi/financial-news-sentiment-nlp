@@ -5,6 +5,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import LabelEncoder
+from sklearn.model_selection import GridSearchCV
 from sklearn.metrics import classification_report, confusion_matrix
 from sklearn.metrics import precision_recall_fscore_support, accuracy_score
 import pandas as pd
@@ -69,30 +70,49 @@ def train_and_evaluate_classic_model(
     log_results(results, model_name, method, y_test, preds, report_path)
 
 
-def train_feedforward_nn(
-    X_train, X_test, y_train, y_test, labels, method, save_dir, results
+def train_model(
+    model,
+    model_name: str,
+    X_train,
+    X_test,
+    y_train,
+    y_test,
+    labels,
+    method,
+    save_dir,
+    results,
+    num_epochs=100,
+    lr=0.001,
+    label_smoothing=0.1,
 ):
-    model_name = "FeedforwardNN"
     model_dir = make_model_subfolder(save_dir, model_name)
     print(f"\nTraining {model_name} ({method})...")
 
-    X_train_tensor = torch.tensor(X_train.toarray(), dtype=torch.float32)
-    X_test_tensor = torch.tensor(X_test.toarray(), dtype=torch.float32)
+    is_sequence_model = (
+        isinstance(X_train, torch.Tensor)
+        and len(X_train.shape) == 2
+        and not hasattr(model, "embedding")
+    )
+
+    # Convert inputs to tensors (if not already)
+    if not torch.is_tensor(X_train):
+        X_train_tensor = torch.tensor(X_train.toarray(), dtype=torch.float32)
+        X_test_tensor = torch.tensor(X_test.toarray(), dtype=torch.float32)
+    else:
+        X_train_tensor = X_train
+        X_test_tensor = X_test
+
     y_train_tensor = torch.tensor(y_train.values, dtype=torch.long)
     y_test_tensor = torch.tensor(y_test.values, dtype=torch.long)
 
-    input_dim = X_train_tensor.shape[1]
-    model = FeedforwardNeuralNetModel(
-        input_dim, hidden_dim=1000, output_dim=len(labels)
-    )
-    criterion = nn.CrossEntropyLoss(label_smoothing=0.1)
-    optimizer = optim.Adam(model.parameters(), lr=0.001)
+    criterion = nn.CrossEntropyLoss(label_smoothing=label_smoothing)
+    optimizer = optim.Adam(model.parameters(), lr=lr)
 
     best_val_loss = float("inf")
     best_model_state = None
     train_loss, val_loss = [], []
 
-    for epoch in range(100):
+    for epoch in range(num_epochs):
         model.train()
         optimizer.zero_grad()
         outputs = model(X_train_tensor)
@@ -143,6 +163,13 @@ def train_feedforward_nn(
     )
 
 
+def perform_grid_search(model, param_grid, X_train, y_train):
+    grid = GridSearchCV(model, param_grid, cv=5, scoring="f1_weighted")
+    grid.fit(X_train, y_train)
+    print(f"Best parameters for {model.__class__.__name__}: {grid.best_params_}")
+    return grid.best_estimator_
+
+
 def main():
     start_time = time()
 
@@ -150,6 +177,10 @@ def main():
     text_col = "news"
     label_col = "sentiment"
     save_dir = create_reports_subfolder("training_results")
+    hidden_dim = 1000
+    num_epochs = 100
+    lr = 0.001
+    label_smoothing = 0.1
     results = []
 
     df = loader.load_data(data_path, text_col, label_col)
@@ -215,7 +246,7 @@ def main():
             results,
         )
         train_and_evaluate_classic_model(
-            LogisticRegression(max_iter=1000),
+            LogisticRegression(max_iter=10000),
             "LogisticRegression",
             X_train_vec,
             X_test_vec,
@@ -226,8 +257,22 @@ def main():
             save_dir,
             results,
         )
-        train_feedforward_nn(
-            X_train_vec, X_test_vec, y_train, y_test, labels, method, save_dir, results
+        input_dim = X_train_vec.shape[1]
+        model = FeedforwardNeuralNetModel(input_dim, hidden_dim, len(labels))
+        train_model(
+            model,
+            "FeedforwardNN",
+            X_train_vec,
+            X_test_vec,
+            y_train,
+            y_test,
+            labels,
+            method,
+            save_dir,
+            results,
+            num_epochs=num_epochs,
+            lr=lr,
+            label_smoothing=label_smoothing,
         )
 
     results_df = pd.DataFrame(results)
