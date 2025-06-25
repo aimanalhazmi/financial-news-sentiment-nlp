@@ -73,6 +73,39 @@ source .venv/bin/activate
 
 ## Example Usage
 ```bash
-python main.py
+python3 train_evaluate.py
 ```
 ---
+## Hyperparameter Tuning with wandb Sweeps
+This project supports automated hyperparameter tuning using wandb sweeps.
+
+### Sweep Configuration
+The sweep uses grid search to tune the following parameters:
+- lr: Learning rate 
+- weight_decay: L2 regularization 
+- label_smoothing: Label smoothing factor 
+- hidden_dim: Size of hidden layer 
+- vectorizer: Vectorization strategy 
+- epochs: Fixed at 30 
+- metric: Optimized for best_model/f1_score
+
+[Sweep config (YAML format)](sweep.yaml)
+
+### How to Run the Sweep
+
+#### 1. Log in to wandb (one-time setup)
+
+```bash
+wandb login
+```
+#### 2. Initialize the sweep:
+```bash
+wandb sweep sweep.yaml
+```
+This command will output a sweep ID, e.g., username/project/sweepid123.
+#### 3. Launch agents to run the sweep:
+```bash
+wandb agent username/project/sweepid123
+```
+Each agent will run one combination of parameters until all are explored.
+You can then view and compare runs at: https://wandb.ai.
